@@ -1,37 +1,67 @@
-import java.awt.Desktop;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import javax.swing.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
 
-public class FreeMindSearch {
+public class FreeMindSearch extends JFrame {
+    private JTextField searchField;
+    private JTextArea resultArea;
+    private DefaultListModel<SearchResult> listModel;
+    private JList<SearchResult> resultList;
 
-    public static void main(String[] args) {
-        String searchText;
+    public FreeMindSearch() {
+        setTitle("FreeMind Search");
+        setSize(600, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        if (args.length == 0) {
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("Please enter the text string to search for: ");
-            searchText = scanner.nextLine();
-        } else {
-            searchText = args[0];
-        }
+        searchField = new JTextField();
+        searchField.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                search();
+            }
+        });
+
+        resultArea = new JTextArea();
+        resultArea.setEditable(false);
+
+        listModel = new DefaultListModel<>();
+        resultList = new JList<>(listModel);
+        resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resultList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    openSelectedFile();
+                }
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(resultList);
+
+        Container contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(searchField, BorderLayout.NORTH);
+        contentPane.add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private void search() {
+        listModel.clear();
+        String searchText = searchField.getText().toLowerCase();
 
         File folder = new File("C:\\Users\\johand\\Documents\\mindmaps");
         File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".mm"));
 
         if (files == null) {
-            System.out.println("No .mm files found in the specified directory.");
+            resultArea.setText("No .mm files found in the specified directory.");
             return;
         }
 
-        List<SearchResult> results = new ArrayList<>();
-
         for (File file : files) {
             try {
-                // Check if the file is empty
                 if (file.length() == 0) {
-                    System.out.println("Skipping empty file: " + file.getName());
                     continue;
                 }
 
@@ -46,50 +76,40 @@ public class FreeMindSearch {
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
                         Element element = (Element) node;
                         String nodeText = element.getAttribute("TEXT");
-                        if (nodeText.contains(searchText)) {
-                            results.add(new SearchResult(file.getName(), nodeText));
+                        if (nodeText.toLowerCase().contains(searchText)) {
+                            listModel.addElement(new SearchResult(file.getName(), nodeText));
                             break;
                         }
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error processing file: " + file.getName());
                 e.printStackTrace();
             }
         }
 
-        if (results.isEmpty()) {
-            System.out.println("No matches found.");
-            return;
+        if (listModel.isEmpty()) {
+            resultArea.setText("No matches found.");
         }
+    }
 
-        System.out.println("Matches found:");
-        for (int i = 0; i < results.size(); i++) {
-            SearchResult result = results.get(i);
-            System.out.println((i + 1) + ". File: " + result.fileName);
-            System.out.println("   First found node text: " + result.nodeText);
-        }
-
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter the number of the map you want to open in FreeMind (or press Enter to do nothing): ");
-        String input = scanner.nextLine();
-
-        if (!input.isEmpty()) {
+    private void openSelectedFile() {
+        SearchResult selectedResult = resultList.getSelectedValue();
+        if (selectedResult != null) {
             try {
-                int choice = Integer.parseInt(input);
-                if (choice > 0 && choice <= results.size()) {
-                    SearchResult chosenResult = results.get(choice - 1);
-                    File fileToOpen = new File("C:\\Users\\johand\\Documents\\mindmaps\\" + chosenResult.fileName);
-                    Desktop.getDesktop().open(fileToOpen);
-                } else {
-                    System.out.println("Invalid choice.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input.");
+                File fileToOpen = new File("C:\\Users\\johand\\Documents\\mindmaps\\" + selectedResult.fileName);
+                Desktop.getDesktop().open(fileToOpen);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new FreeMindSearch().setVisible(true);
+            }
+        });
     }
 
     static class SearchResult {
@@ -99,6 +119,11 @@ public class FreeMindSearch {
         SearchResult(String fileName, String nodeText) {
             this.fileName = fileName;
             this.nodeText = nodeText;
+        }
+
+        @Override
+        public String toString() {
+            return fileName + " - " + nodeText;
         }
     }
 }
