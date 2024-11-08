@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.*;
 import javax.swing.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
@@ -11,12 +10,54 @@ public class FreeMindSearch extends JFrame {
     private JTextArea resultArea;
     private DefaultListModel<SearchResult> listModel;
     private JList<SearchResult> resultList;
+    private File defaultFolder = null;
 
     public FreeMindSearch() {
         setTitle("FreeMind Search");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        // Load default folder
+        loadDefaultFolder();
+
+        // Create Menu Bar
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        // Add "Help" Menu
+        JMenu helpMenu = new JMenu("Help");
+        menuBar.add(helpMenu);
+
+        JMenuItem aboutMenuItem = new JMenuItem("About");
+        helpMenu.add(aboutMenuItem);
+
+        // About Menu Item Action
+        aboutMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null,
+                        "<html><body style='font-family:Arial;font-size:12px;'>" +
+                                "<strong>Freemind Search Multiple Maps.</strong><br>" +
+                                "Copyright Johan Andersson.<br>" +
+                                "License: MIT." +
+                                "</body></html>",
+                        "About", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        // Add "Settings" Menu
+        JMenu settingsMenu = new JMenu("Settings");
+        menuBar.add(settingsMenu);
+
+        JMenuItem setDefaultFolderMenuItem = new JMenuItem("Set Default Folder");
+        settingsMenu.add(setDefaultFolderMenuItem);
+
+        // Set Default Folder Menu Item Action
+        setDefaultFolderMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setDefaultFolder();
+            }
+        });
 
         searchField = new JTextField();
         searchField.addActionListener(new ActionListener() {
@@ -40,24 +81,69 @@ public class FreeMindSearch extends JFrame {
         });
 
         JScrollPane scrollPane = new JScrollPane(resultList);
+        JScrollPane resultScrollPane = new JScrollPane(resultArea);
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
         contentPane.add(searchField, BorderLayout.NORTH);
         contentPane.add(scrollPane, BorderLayout.CENTER);
+        contentPane.add(resultScrollPane, BorderLayout.SOUTH);
+    }
+
+    private void setDefaultFolder() {
+        JFileChooser folderChooser = new JFileChooser();
+        folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnValue = folderChooser.showOpenDialog(this);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            defaultFolder = folderChooser.getSelectedFile();
+            try (PrintWriter out = new PrintWriter(new FileWriter(getHomeDirectoryFile()))) {
+                out.println(defaultFolder.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void loadDefaultFolder() {
+        File file = getHomeDirectoryFile();
+        if (file.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                defaultFolder = new File(br.readLine());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private File getHomeDirectoryFile() {
+        return new File(System.getProperty("user.home"), "defaultFolder.txt");
     }
 
     private void search() {
+        if (defaultFolder == null) {
+            JOptionPane.showMessageDialog(this, "No default folder is set. Please select a folder.");
+            setDefaultFolder();
+            if (defaultFolder == null) {
+                return;
+            }
+        }
+
         listModel.clear();
         String searchText = searchField.getText().toLowerCase();
 
-        File folder = new File("C:\\Users\\johand\\Documents\\mindmaps");
-        File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".mm"));
+        if (searchText.length() <= 1) {
+            JOptionPane.showMessageDialog(this, "Search text must be more than 1 character.");
+            return;
+        }
+
+        File[] files = defaultFolder.listFiles((dir, name) -> name.toLowerCase().endsWith(".mm"));
 
         if (files == null) {
             resultArea.setText("No .mm files found in the specified directory.");
             return;
         }
+
+        boolean matchFound = false;
 
         for (File file : files) {
             try {
@@ -78,6 +164,7 @@ public class FreeMindSearch extends JFrame {
                         String nodeText = element.getAttribute("TEXT");
                         if (nodeText.toLowerCase().equals(searchText)) {
                             listModel.addElement(new SearchResult(file.getName(), nodeText));
+                            matchFound = true;
                             break;
                         }
                     }
@@ -87,7 +174,7 @@ public class FreeMindSearch extends JFrame {
             }
         }
 
-        if (listModel.isEmpty()) {
+        if (!matchFound) {
             resultArea.setText("No matches found.");
         }
     }
@@ -96,7 +183,7 @@ public class FreeMindSearch extends JFrame {
         SearchResult selectedResult = resultList.getSelectedValue();
         if (selectedResult != null) {
             try {
-                File fileToOpen = new File("C:\\Users\\johand\\Documents\\mindmaps\\" + selectedResult.fileName);
+                File fileToOpen = new File(defaultFolder, selectedResult.fileName);
                 Desktop.getDesktop().open(fileToOpen);
             } catch (IOException e) {
                 e.printStackTrace();
