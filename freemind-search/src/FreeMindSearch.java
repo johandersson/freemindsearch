@@ -76,7 +76,7 @@ public class FreeMindSearch extends JFrame {
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
                         Element element = (Element) node;
                         String nodeText = element.getAttribute("TEXT");
-                        if (nodeText.toLowerCase().contains(searchText)) {
+                        if (nodeText.toLowerCase().equals(searchText)) {
                             listModel.addElement(new SearchResult(file.getName(), nodeText));
                             break;
                         }
