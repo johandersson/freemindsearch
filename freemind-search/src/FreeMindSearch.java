@@ -2,9 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import javax.swing.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
@@ -14,7 +12,6 @@ public class FreeMindSearch extends JFrame {
     private JTextArea resultArea;
     private DefaultListModel<SearchResult> listModel;
     private JList<SearchResult> resultList;
-    private JCheckBox subfolderCheckBox;
     private File defaultFolder = null;
 
     public FreeMindSearch() {
@@ -86,19 +83,12 @@ public class FreeMindSearch extends JFrame {
             }
         });
 
-        // Create subfolder checkbox
-        subfolderCheckBox = new JCheckBox("Include subfolders");
-        subfolderCheckBox.setSelected(false); // Default setting: do not search in subfolders
-
         JScrollPane scrollPane = new JScrollPane(resultList);
         JScrollPane resultScrollPane = new JScrollPane(resultArea);
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.add(searchField, BorderLayout.CENTER);
-        topPanel.add(subfolderCheckBox, BorderLayout.EAST);
-        contentPane.add(topPanel, BorderLayout.NORTH);
+        contentPane.add(searchField, BorderLayout.NORTH);
         contentPane.add(scrollPane, BorderLayout.CENTER);
         contentPane.add(resultScrollPane, BorderLayout.SOUTH);
     }
@@ -151,16 +141,15 @@ public class FreeMindSearch extends JFrame {
             return;
         }
 
-        List<File> files = new ArrayList<>();
-        collectFiles(defaultFolder, files, subfolderCheckBox.isSelected());
+        File[] files = defaultFolder.listFiles((dir, name) -> name.toLowerCase().endsWith(".mm"));
 
-        if (files.isEmpty()) {
+        if (files == null) {
             resultArea.setText("No .mm files found in the specified directory.");
             return;
         }
 
         // Sort files by last modified date, latest first
-        files.sort(Comparator.comparingLong(File::lastModified).reversed());
+        Arrays.sort(files, Comparator.comparingLong(File::lastModified).reversed());
 
         boolean matchFound = false;
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -198,20 +187,6 @@ public class FreeMindSearch extends JFrame {
             resultArea.setText("No matches found.");
         } else {
             resultArea.setText(""); // Clear the status message when done
-        }
-    }
-
-    private void collectFiles(File folder, List<File> files, boolean includeSubfolders) {
-        File[] listFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".mm") || (includeSubfolders && new File(dir, name).isDirectory()));
-
-        if (listFiles != null) {
-            for (File file : listFiles) {
-                if (file.isDirectory() && includeSubfolders) {
-                    collectFiles(file, files, true);
-                } else if (file.isFile()) {
-                    files.add(file);
-                }
-            }
         }
     }
 
