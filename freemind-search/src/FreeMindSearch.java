@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import javax.swing.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
@@ -14,7 +16,8 @@ public class FreeMindSearch extends JFrame {
 
     public FreeMindSearch() {
         setTitle("FreeMind Search");
-        setSize(600, 400);
+        // Make the window bigger
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -129,10 +132,12 @@ public class FreeMindSearch extends JFrame {
         }
 
         listModel.clear();
+        resultArea.setText("Searching...");
+
         String searchText = searchField.getText().toLowerCase();
 
         if (searchText.length() <= 1) {
-            JOptionPane.showMessageDialog(this, "Search text must be more than 1 character.");
+            resultArea.setText("Search text must be more than 1 character.");
             return;
         }
 
@@ -143,7 +148,11 @@ public class FreeMindSearch extends JFrame {
             return;
         }
 
+        // Sort files by last modified date, latest first
+        Arrays.sort(files, Comparator.comparingLong(File::lastModified).reversed());
+
         boolean matchFound = false;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         for (File file : files) {
             try {
@@ -163,7 +172,7 @@ public class FreeMindSearch extends JFrame {
                         Element element = (Element) node;
                         String nodeText = element.getAttribute("TEXT");
                         if (nodeText.toLowerCase().contains(searchText)) {
-                            listModel.addElement(new SearchResult(file.getName(), nodeText));
+                            listModel.addElement(new SearchResult(file.getName(), nodeText, sdf.format(file.lastModified())));
                             matchFound = true;
                             break;
                         }
@@ -176,6 +185,8 @@ public class FreeMindSearch extends JFrame {
 
         if (!matchFound) {
             resultArea.setText("No matches found.");
+        } else {
+            resultArea.setText(""); // Clear the status message when done
         }
     }
 
@@ -202,15 +213,17 @@ public class FreeMindSearch extends JFrame {
     static class SearchResult {
         String fileName;
         String nodeText;
+        String lastModified;
 
-        SearchResult(String fileName, String nodeText) {
+        SearchResult(String fileName, String nodeText, String lastModified) {
             this.fileName = fileName;
             this.nodeText = nodeText;
+            this.lastModified = lastModified;
         }
 
         @Override
         public String toString() {
-            return fileName + " - " + nodeText;
+            return fileName + " - " + nodeText + " (Last Modified: " + lastModified + ")";
         }
     }
 }
