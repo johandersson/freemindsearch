@@ -9,6 +9,7 @@ import org.w3c.dom.*;
 
 public class FreeMindSearch extends JFrame {
     private JTextField searchField;
+    private JCheckBox searchNotesCheckBox;
     private JTextArea resultArea;
     private DefaultListModel<SearchResult> listModel;
     private JList<SearchResult> resultList;
@@ -16,7 +17,6 @@ public class FreeMindSearch extends JFrame {
 
     public FreeMindSearch() {
         setTitle("FreeMind Search");
-        // Make the window bigger
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -62,12 +62,19 @@ public class FreeMindSearch extends JFrame {
             }
         });
 
+        JPanel searchPanel = new JPanel(new BorderLayout());
         searchField = new JTextField();
         searchField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 search();
             }
         });
+
+        searchNotesCheckBox = new JCheckBox("Search inside notes");
+        searchNotesCheckBox.setSelected(false);
+
+        searchPanel.add(searchField, BorderLayout.CENTER);
+        searchPanel.add(searchNotesCheckBox, BorderLayout.EAST);
 
         resultArea = new JTextArea();
         resultArea.setEditable(false);
@@ -88,7 +95,7 @@ public class FreeMindSearch extends JFrame {
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
-        contentPane.add(searchField, BorderLayout.NORTH);
+        contentPane.add(searchPanel, BorderLayout.NORTH);
         contentPane.add(scrollPane, BorderLayout.CENTER);
         contentPane.add(resultScrollPane, BorderLayout.SOUTH);
     }
@@ -135,6 +142,7 @@ public class FreeMindSearch extends JFrame {
         resultArea.setText("Searching...");
 
         String searchText = searchField.getText().toLowerCase();
+        boolean searchNotes = searchNotesCheckBox.isSelected();
 
         if (searchText.length() <= 1) {
             resultArea.setText("Search text must be more than 1 character.");
@@ -170,8 +178,24 @@ public class FreeMindSearch extends JFrame {
                     Node node = nodeList.item(i);
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
                         Element element = (Element) node;
-                        String nodeText = element.getAttribute("TEXT");
-                        if (nodeText.toLowerCase().contains(searchText)) {
+                        String nodeText = element.getAttribute("TEXT").toLowerCase();
+                        boolean textMatch = nodeText.contains(searchText);
+
+                        // Check if we should search inside notes
+                        boolean notesMatch = false;
+                        if (searchNotes) {
+                            NodeList richContentNodes = element.getElementsByTagName("richcontent");
+                            for (int j = 0; j < richContentNodes.getLength(); j++) {
+                                Node richContentNode = richContentNodes.item(j);
+                                String richContentText = richContentNode.getTextContent().toLowerCase();
+                                if (richContentText.contains(searchText)) {
+                                    notesMatch = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (textMatch || notesMatch) {
                             listModel.addElement(new SearchResult(file.getName(), nodeText, sdf.format(file.lastModified())));
                             matchFound = true;
                             break;
