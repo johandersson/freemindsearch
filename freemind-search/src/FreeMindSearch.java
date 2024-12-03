@@ -89,7 +89,15 @@ public class FreeMindSearch extends JFrame {
                 if (value instanceof SearchResult) {
                     SearchResult result = (SearchResult) value;
                     if (result.isNote) {
-                        c.setForeground(new Color(255, 215, 0)); // Dark Yellow
+                        c.setBackground(new Color(255, 255, 153)); // Light Yellow (Sticky Note Color)
+                        c.setForeground(new Color(102, 102, 0)); // Darker Text for good contrast
+                    } else {
+                        c.setBackground(Color.WHITE);
+                        c.setForeground(Color.BLACK);
+                    }
+                    if (isSelected) {
+                        c.setBackground(list.getSelectionBackground());
+                        c.setForeground(list.getSelectionForeground());
                     }
                 }
                 return c;
@@ -203,7 +211,8 @@ public class FreeMindSearch extends JFrame {
                                 String richContentText = richContentNode.getTextContent().toLowerCase();
                                 if (richContentText.contains(searchText)) {
                                     notesMatch = true;
-                                    listModel.addElement(new SearchResult(file.getName(), "Note: " + richContentText, sdf.format(file.lastModified()), true));
+                                    String displayText = "Note: " + (richContentText.length() > 50 ? richContentText.substring(0, 50) + "..." : richContentText);
+                                    listModel.addElement(new SearchResult(file.getName(), displayText, sdf.format(file.lastModified()), true));
                                     matchFound = true;
                                     break;
                                 }
