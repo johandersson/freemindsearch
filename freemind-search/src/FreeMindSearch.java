@@ -82,6 +82,19 @@ public class FreeMindSearch extends JFrame {
         listModel = new DefaultListModel<>();
         resultList = new JList<>(listModel);
         resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resultList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof SearchResult) {
+                    SearchResult result = (SearchResult) value;
+                    if (result.isNote) {
+                        c.setForeground(new Color(255, 215, 0)); // Dark Yellow
+                    }
+                }
+                return c;
+            }
+        });
         resultList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (evt.getClickCount() == 2) {
@@ -190,13 +203,15 @@ public class FreeMindSearch extends JFrame {
                                 String richContentText = richContentNode.getTextContent().toLowerCase();
                                 if (richContentText.contains(searchText)) {
                                     notesMatch = true;
+                                    listModel.addElement(new SearchResult(file.getName(), "Note: " + richContentText, sdf.format(file.lastModified()), true));
+                                    matchFound = true;
                                     break;
                                 }
                             }
                         }
 
-                        if (textMatch || notesMatch) {
-                            listModel.addElement(new SearchResult(file.getName(), nodeText, sdf.format(file.lastModified())));
+                        if (textMatch && !notesMatch) {
+                            listModel.addElement(new SearchResult(file.getName(), nodeText, sdf.format(file.lastModified()), false));
                             matchFound = true;
                             break;
                         }
@@ -238,11 +253,13 @@ public class FreeMindSearch extends JFrame {
         String fileName;
         String nodeText;
         String lastModified;
+        boolean isNote;
 
-        SearchResult(String fileName, String nodeText, String lastModified) {
+        SearchResult(String fileName, String nodeText, String lastModified, boolean isNote) {
             this.fileName = fileName;
             this.nodeText = nodeText;
             this.lastModified = lastModified;
+            this.isNote = isNote;
         }
 
         @Override
