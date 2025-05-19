@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.swing.*;
@@ -21,54 +23,33 @@ public class FreeMindSearch extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Load default folder
         loadDefaultFolder();
 
-        // Create Menu Bar
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        // Add "Help" Menu
         JMenu helpMenu = new JMenu("Help");
         menuBar.add(helpMenu);
-
         JMenuItem aboutMenuItem = new JMenuItem("About");
         helpMenu.add(aboutMenuItem);
-
-        // About Menu Item Action
-        aboutMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        aboutMenuItem.addActionListener(e ->
                 JOptionPane.showMessageDialog(null,
                         "<html><body style='font-family:Arial;font-size:12px;'>" +
                                 "<strong>Freemind Search Multiple Maps.</strong><br>" +
                                 "Copyright Johan Andersson.<br>" +
                                 "License: MIT." +
                                 "</body></html>",
-                        "About", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
+                        "About", JOptionPane.INFORMATION_MESSAGE));
 
-        // Add "Settings" Menu
         JMenu settingsMenu = new JMenu("Settings");
         menuBar.add(settingsMenu);
-
         JMenuItem setDefaultFolderMenuItem = new JMenuItem("Set Default Folder");
         settingsMenu.add(setDefaultFolderMenuItem);
-
-        // Set Default Folder Menu Item Action
-        setDefaultFolderMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setDefaultFolder();
-            }
-        });
+        setDefaultFolderMenuItem.addActionListener(e -> setDefaultFolder());
 
         JPanel searchPanel = new JPanel(new BorderLayout());
         searchField = new JTextField();
-        searchField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                search();
-            }
-        });
+        searchField.addActionListener(e -> search());
 
         searchNotesCheckBox = new JCheckBox("Search inside notes");
         searchNotesCheckBox.setSelected(false);
@@ -88,13 +69,8 @@ public class FreeMindSearch extends JFrame {
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof SearchResult) {
                     SearchResult result = (SearchResult) value;
-                    if (result.isNote) {
-                        c.setBackground(new Color(255, 255, 153)); // Light Yellow (Sticky Note Color)
-                        c.setForeground(new Color(102, 102, 0)); // Darker Text for good contrast
-                    } else {
-                        c.setBackground(Color.WHITE);
-                        c.setForeground(Color.BLACK);
-                    }
+                    c.setBackground(result.isNote ? new Color(255, 255, 153) : Color.WHITE);
+                    c.setForeground(result.isNote ? new Color(102, 102, 0) : Color.BLACK);
                     if (isSelected) {
                         c.setBackground(list.getSelectionBackground());
                         c.setForeground(list.getSelectionForeground());
@@ -151,47 +127,37 @@ public class FreeMindSearch extends JFrame {
     }
 
     private void search() {
-        if (defaultFolder == null) {
-            JOptionPane.showMessageDialog(this, "No default folder is set. Please select a folder.");
-            setDefaultFolder();
-            if (defaultFolder == null) {
-                return;
-            }
-        }
-
-        listModel.clear();
-        resultArea.setText("Searching...");
-
         String searchText = searchField.getText().toLowerCase();
         boolean searchNotes = searchNotesCheckBox.isSelected();
-
-        if (searchText.length() <= 1) {
-            resultArea.setText("Search text must be more than 1 character.");
+        listModel.clear();
+        if (searchText.isEmpty() || defaultFolder == null) {
             return;
         }
-
-        File[] files = defaultFolder.listFiles((dir, name) -> name.toLowerCase().endsWith(".mm"));
-
-        if (files == null) {
-            resultArea.setText("No .mm files found in the specified directory.");
-            return;
-        }
-
-        // Sort files by last modified date, latest first
-        Arrays.sort(files, Comparator.comparingLong(File::lastModified).reversed());
 
         boolean matchFound = false;
+
+        File[] files = defaultFolder.listFiles((dir, name) -> name.toLowerCase().endsWith(".mm"));
+        if (files == null || files.length == 0) {
+            JOptionPane.showMessageDialog(this, "No FreeMind files found in the selected folder.", "No Files Found", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         for (File file : files) {
             try {
-                if (file.length() == 0) {
-                    continue;
-                }
+                if (file.length() == 0) continue;
 
+                // Read XML file as raw text before parsing
+                String xmlContent = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+
+                // Replace "&nbsp;" with a space before parsing
+                xmlContent = xmlContent.replaceAll("&nbsp;", " ");
+
+                // Parse the corrected XML content
                 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                Document doc = dBuilder.parse(file);
+                InputStream correctedStream = new ByteArrayInputStream(xmlContent.getBytes(StandardCharsets.UTF_8));
+                Document doc = dBuilder.parse(correctedStream);
                 doc.getDocumentElement().normalize();
 
                 NodeList nodeList = doc.getElementsByTagName("node");
@@ -202,13 +168,13 @@ public class FreeMindSearch extends JFrame {
                         String nodeText = element.getAttribute("TEXT").toLowerCase();
                         boolean textMatch = nodeText.contains(searchText);
 
-                        // Check if we should search inside notes
                         boolean notesMatch = false;
                         if (searchNotes) {
                             NodeList richContentNodes = element.getElementsByTagName("richcontent");
                             for (int j = 0; j < richContentNodes.getLength(); j++) {
                                 Node richContentNode = richContentNodes.item(j);
                                 String richContentText = richContentNode.getTextContent().toLowerCase();
+
                                 if (richContentText.contains(searchText)) {
                                     notesMatch = true;
                                     String displayText = "Note: " + (richContentText.length() > 50 ? richContentText.substring(0, 50) + "..." : richContentText);
@@ -231,11 +197,6 @@ public class FreeMindSearch extends JFrame {
             }
         }
 
-        if (!matchFound) {
-            resultArea.setText("No matches found.");
-        } else {
-            resultArea.setText(""); // Clear the status message when done
-        }
     }
 
     private void openSelectedFile() {
@@ -251,17 +212,11 @@ public class FreeMindSearch extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new FreeMindSearch().setVisible(true);
-            }
-        });
+        SwingUtilities.invokeLater(() -> new FreeMindSearch().setVisible(true));
     }
 
     static class SearchResult {
-        String fileName;
-        String nodeText;
-        String lastModified;
+        String fileName, nodeText, lastModified;
         boolean isNote;
 
         SearchResult(String fileName, String nodeText, String lastModified, boolean isNote) {
