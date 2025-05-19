@@ -1,4 +1,5 @@
 # FreeMind and Freeplane Search Multiple Maps
+![freemind-search](https://github.com/user-attachments/assets/cc26e7b1-c3f9-4c1c-8444-cf87c1e70826)
 
 ## Overview
 
