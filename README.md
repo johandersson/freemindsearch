@@ -1,8 +1,8 @@
-# FreeMind Search Multiple Maps
+# FreeMind and Freeplane Search Multiple Maps
 
 ## Overview
 
-FreeMind Search Multiple Maps is a powerful desktop application for FreeMind mind map users.
+FreeMind Search Multiple Maps is a powerful desktop application for FreeMind and Freeplane mind map users.
 
 ## Features
 - Effortlessly search through multiple `.mm` files in a chosen folder
