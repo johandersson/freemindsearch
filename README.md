@@ -15,5 +15,7 @@ FreeMind Search Multiple Maps is a powerful desktop application for FreeMind and
 
 ## Additional Info
 - Cross-platform
-- Open source
+- Open source (GPL 3)
 - Easy to use
+
+(C) Johan Andersson, 2025
