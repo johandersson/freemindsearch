@@ -1,5 +1,5 @@
-## Overview  
-**FreeMind Search ** is a dedicated desktop tool for **searching in multiple FreeMind and FreePlane mind maps**. It is designed for users of [Freeplane](https://www.freeplane.org/) and [FreeMind](http://freemind.sourceforge.net/wiki/index.php/Main_Page). 
+## Overview of FreeMind Search
+**FreeMind Search** is a dedicated desktop tool for **searching in multiple FreeMind and FreePlane mind maps**. It is designed for users of [Freeplane](https://www.freeplane.org/) and [FreeMind](http://freemind.sourceforge.net/wiki/index.php/Main_Page). 
 
 Both **FreePlane** and **FreeMind** offer powerful mind‑mapping features, but **neither supports searching across multiple maps**—they only search within the currently opened file. This application fills that gap by enabling fast, efficient multi‑map searching.
 
