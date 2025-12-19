@@ -1,21 +1,24 @@
-# FreeMind and Freeplane Search Multiple Maps
+# FreeMind and Freeplane — Search Multiple Maps  
 ![freemind-search](https://github.com/user-attachments/assets/cc26e7b1-c3f9-4c1c-8444-cf87c1e70826)
 
-## Overview
+## Overview  
+**FreeMind and Freeplane Search Multiple Maps** is a dedicated desktop tool designed for users of [Freeplane](https://www.freeplane.org/) and [FreeMind](http://freemind.sourceforge.net/wiki/index.php/Main_Page) 
 
-FreeMind Search Multiple Maps is a powerful desktop application for FreeMind and Freeplane mind map users.
+Both **FreePlane** and **FreeMind** offer powerful mind‑mapping features, but **neither supports searching across multiple maps**—they only search within the currently opened file. This application fills that gap by enabling fast, efficient multi‑map searching.
 
-## Features
-- Effortlessly search through multiple `.mm` files in a chosen folder
-- Instantly find nodes and notes matching your keywords
-- User-friendly interface
-- Quick double-click file opening
-- Support for searching inside notes
-- Saves time and boosts productivity
+## Features  
+- Search through any number of `.mm` files in a selected folder  
+- Instantly locate nodes and notes containing your keywords  
+- Clean, intuitive interface  
+- Double‑click to open results directly in FreeMind or Freeplane  
+- Full support for searching inside node notes  
+- A huge time‑saver for users with large collections of maps  
 
-## Additional Info
-- Cross-platform
-- Open source (GPL 3)
-- Easy to use
+---
 
-(C) Johan Andersson, 2025
+## Additional Info  
+- Cross‑platform (Java) 
+- Open source (GPLv3)  
+- Lightweight and easy to use  
+
+© Johan Andersson, 2025
