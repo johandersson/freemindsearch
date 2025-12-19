@@ -3,7 +3,7 @@
 
 Both **FreePlane** and **FreeMind** offer powerful mind‑mapping features, but **neither supports searching across multiple maps**—they only search within the currently opened file. This application fills that gap by enabling fast, efficient multi‑map searching.
 
-The program is an independent tool that searches in the xml-formatted **FreePlane** and **FreeMind** files, it is not a plugin to theese programs.
+The program is an independent tool that searches in the XML file format of **FreePlane** and **FreeMind**, it is not a plugin to theese programs.
 
 ## Features  
 - Search through any number of `.mm` files in a selected folder
