@@ -6,16 +6,18 @@
 
 Both **FreePlane** and **FreeMind** offer powerful mind‑mapping features, but **neither supports searching across multiple maps**—they only search within the currently opened file. This application fills that gap by enabling fast, efficient multi‑map searching.
 
+The program is an independent tool that searches in the xml-formatted **FreePlane** and **FreeMind** files, it is not a plugin to theese programs.
+
 ## Features  
-- Search through any number of `.mm` files in a selected folder  
+- Search through any number of `.mm` files in a selected folder
+- Search inside notes!
 - Instantly locate nodes and notes containing your keywords  
 - Clean, intuitive interface  
 - Double‑click to open results directly in FreeMind or Freeplane  
 - Full support for searching inside node notes  
-- A huge time‑saver for users with large collections of maps  
-
+- A huge time‑saver for users with large collections of maps
+  
 ---
-
 ## Additional Info  
 - Cross‑platform (Java) 
 - Open source (GPLv3)  
