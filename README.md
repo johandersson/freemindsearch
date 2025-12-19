@@ -1,6 +1,3 @@
-# FreeMind and Freeplane — Search Multiple Maps  
-![freemind-search](https://github.com/user-attachments/assets/cc26e7b1-c3f9-4c1c-8444-cf87c1e70826)
-
 ## Overview  
 **FreeMind and Freeplane Search Multiple Maps** is a dedicated desktop tool designed for users of [Freeplane](https://www.freeplane.org/) and [FreeMind](http://freemind.sourceforge.net/wiki/index.php/Main_Page) 
 
@@ -16,7 +13,9 @@ The program is an independent tool that searches in the xml-formatted **FreePlan
 - Double‑click to open results directly in FreeMind or Freeplane  
 - Full support for searching inside node notes  
 - A huge time‑saver for users with large collections of maps
-  
+
+# Example screen shot of UI in FreeMind and FreePlane Search
+![freemind-search](https://github.com/user-attachments/assets/cc26e7b1-c3f9-4c1c-8444-cf87c1e70826)
 ---
 ## Additional Info  
 - Cross‑platform (Java) 
