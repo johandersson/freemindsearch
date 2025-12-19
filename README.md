@@ -20,6 +20,9 @@ The program is an independent tool that searches in the XML file format of **Fre
 ## Additional Info  
 - Cross‑platform (Java) 
 - Open source (GPLv3)  
-- Lightweight and easy to use  
+- Lightweight and easy to use
+
+## Build
+Currently only build from source with javac is available.
 
 © Johan Andersson, 2025
