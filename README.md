@@ -7,7 +7,7 @@ The program is an independent tool that searches in the xml-formatted **FreePlan
 
 ## Features  
 - Search through any number of `.mm` files in a selected folder
-- Search inside notes!
+- **Search inside notes in multiple mind maps!**
 - Instantly locate nodes and notes containing your keywords  
 - Clean, intuitive interface  
 - Double‑click to open results directly in FreeMind or Freeplane  
